@@ -12,7 +12,7 @@
 -behaviour(supervisor).
 
 %% API
--export([start_link/0, start_pool/2, stop_pool/1, ensure_started/0]).
+-export([start_link/0, start_pool/2, stop_pool/1, ensure_started/0, link/0]).
 
 %% Supervisor callbacks
 -export([init/1]).
@@ -37,9 +37,13 @@ stop_pool(_) ->
 ensure_started() ->
   case start_link() of
     {ok, _} -> ok;
-    {error, {already_started, _}} -> ok;
+    {error, {already_started, Pid}} -> link(Pid), ok;
     {error, _} = Err -> Err
   end.
+
+-spec link() -> true.
+link()->
+  link(whereis(?SERVER)).
 
 %%--------------------------------------------------------------------
 %% @doc

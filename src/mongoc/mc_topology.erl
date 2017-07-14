@@ -39,6 +39,7 @@ start_link(Seeds, TopologyOptions, WorkerOptions) ->
 %%% gen_server callbacks
 %%%===================================================================
 init([SeedsList, TopologyOptions, WorkerOptions]) ->
+  mc_pool_sup:link(),
   try_register(TopologyOptions),
   {Type, SetName, Seeds} = parse_seeds(SeedsList),
   ServerSelectionTimeoutMS = mc_utils:get_value(serverSelectionTimeoutMS, TopologyOptions, 30000),
