@@ -89,6 +89,8 @@ is_candidate(_, _, _, _) ->
   false.
 
 %% @private
+check_tags(Server, Tags, STags) when is_map(STags) ->
+  check_tags(Server, Tags, maps:to_list(STags));
 check_tags(Server, Tags, STags) ->
   ResL = length(lists:subtract(STags, lists:subtract(STags, Tags))),
   L = length(Tags),
