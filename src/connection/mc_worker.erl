@@ -103,7 +103,7 @@ handle_info({NetR, _Socket}, State) when NetR =:= tcp_closed; NetR =:= ssl_close
   {stop, tcp_closed, State};
 handle_info(hibernate, State) ->
   {noreply, State#state{hibernate_timer = undefined}, hibernate};
-handle_info({NetR, _Socket, Reason}, State) when NetR =:= tcp_errror; NetR =:= ssl_error ->
+handle_info({NetR, _Socket, Reason}, State) when NetR =:= tcp_error; NetR =:= ssl_error ->
   {stop, Reason, State}.
 
 %% @hidden
@@ -189,10 +189,11 @@ get_write_concern(_) -> undefined.
 %% @private
 %% Parses proplist to record
 form_state(Options) ->
-  Database = mc_utils:get_value(database, Options, <<"admin">>),
+    Database = mc_utils:get_value(database, Options, <<"admin">>),
+    AuthSource = mc_utils:get_value(auth_source, Options, <<"admin">>),
   RMode = mc_utils:get_value(r_mode, Options, master),
   WMode = mc_utils:get_value(w_mode, Options, unsafe),
-  #conn_state{database = Database, read_mode = RMode, write_mode = WMode}.
+  #conn_state{database = Database, auth_source = AuthSource, read_mode = RMode, write_mode = WMode}.
 
 %% @private
 %% Register this process if needed
@@ -214,6 +215,6 @@ get_set_opts_module(Options) ->
 auth_if_credentials(_, _, _, Login, Password) when Login =:= undefined; Password =:= undefined ->
   ok;
 auth_if_credentials(Socket, ConnState, NetModule, Login, Password) ->
-  Version = mc_worker_logic:get_version(Socket, ConnState#conn_state.database, NetModule),
-  mc_auth_logic:auth(Version, Socket, ConnState#conn_state.database, Login, Password, NetModule),
+  Version = mc_worker_logic:get_version(Socket, ConnState#conn_state.auth_source, NetModule),
+  mc_auth_logic:auth(Version, Socket, ConnState#conn_state.auth_source, Login, Password, NetModule),
   ok.
